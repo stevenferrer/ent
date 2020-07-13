@@ -54,8 +54,8 @@ func (ftc *FileTypeCreate) Mutation() *FileTypeMutation {
 
 // Save creates the FileType in the database.
 func (ftc *FileTypeCreate) Save(ctx context.Context) (*FileType, error) {
-	if _, ok := ftc.mutation.Name(); !ok {
-		return nil, &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+	if err := ftc.preSave(); err != nil {
+		return nil, err
 	}
 	var (
 		err  error
@@ -91,6 +91,13 @@ func (ftc *FileTypeCreate) SaveX(ctx context.Context) *FileType {
 		panic(err)
 	}
 	return v
+}
+
+func (ftc *FileTypeCreate) preSave() error {
+	if _, ok := ftc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+	}
+	return nil
 }
 
 func (ftc *FileTypeCreate) gremlinSave(ctx context.Context) (*FileType, error) {
@@ -138,4 +145,10 @@ func (ftc *FileTypeCreate) gremlin() *dsl.Traversal {
 		tr = cr.pred.Coalesce(cr.test, tr)
 	}
 	return tr
+}
+
+// FileTypeCreateBulk is the builder for creating a bulk of FileType entities.
+type FileTypeCreateBulk struct {
+	config
+	builders []*FileTypeCreate
 }
